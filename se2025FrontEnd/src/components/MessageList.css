@@ -1,0 +1,197 @@
+.message-list {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.message-form {
+  margin-bottom: 20px;
+}
+
+.message-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.message-form button {
+  padding: 8px 16px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.message-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.message-header, .reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.username {
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.time {
+  color: #999;
+  font-size: 12px;
+}
+
+.message-content, .reply-content {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.message-actions, .reply-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.message-actions button, .reply-actions button {
+  padding: 4px 12px;
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.message-actions button:hover, .reply-actions button:hover {
+  background-color: #f5f5f5;
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.delete-btn {
+  border-color: #ff4d4f !important;
+  color: #ff4d4f !important;
+}
+
+.delete-btn:hover {
+  background-color: #fff1f0 !important;
+  border-color: #ff4d4f !important;
+  color: #ff4d4f !important;
+}
+
+.reply-form {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.reply-form textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.reply-form .reply-actions {
+  margin-bottom: 0;
+}
+
+.reply-form .reply-actions button:first-child {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+}
+
+.reply-form .reply-actions button:first-child:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.reply-form .reply-actions button:last-child {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.replies {
+  margin-top: 10px;
+  padding-left: 20px;
+  border-left: 2px solid #eee;
+}
+
+.reply {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.reply + .reply {
+  margin-top: 10px;
+}
+
+.no-messages {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+}
+
+.no-messages i {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+}
+
+.loading i {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.error i {
+  font-size: 24px;
+  color: #ff4d4f;
+  margin-bottom: 10px;
+}
+
+.error button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+} 
