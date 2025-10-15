@@ -66,8 +66,8 @@ jobs:
         chmod 600 /tmp/ssh_key
     
         # 直接使用scp命令传输文件
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -r se2025FrontEnd/build/* ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no se2025BackEnd/target/*.jar ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -r se2025FrontEnd/dist ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no se2025BackEnd/target ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
     
         rm -f /tmp/ssh_key
         
@@ -92,7 +92,7 @@ jobs:
             if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
               Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
             }
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\build\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
             
             # 部署后端JAR
             Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025BackEnd\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
