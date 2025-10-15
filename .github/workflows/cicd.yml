@@ -12,7 +12,7 @@ jobs:
       uses: actions/checkout@v3
 
     # 前端构建测试
-    - name: Set up Node.js
+    - name: Set up image.pngNode.js
       uses: actions/setup-node@v3
       with:
         node-version: 18
