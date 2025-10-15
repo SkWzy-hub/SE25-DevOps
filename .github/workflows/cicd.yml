@@ -1,0 +1,111 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request_target:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:  
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 前端构建测试
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+    - name: Install frontend dependencies
+      working-directory: se2025Frontend
+      run: npm install
+    - name: Build frontend
+      working-directory: se2025Frontend
+      run: npm run build
+
+    # 后端构建测试
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 21
+    - name: Build backend
+      working-directory: se2025BackEnd
+      run: mvn package -DskipTests  # 跳过测试（如果测试需要数据库等环境）
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    # 准备前端文件
+    - name: Build frontend for deploy
+      working-directory: se2025Frontend
+      run: |
+        npm install
+        npm run build
+        
+    # 准备后端JAR
+    - name: Build backend JAR
+      working-directory: se2025BackEnd
+      run: mvn package -DskipTests
+      
+    # SCP到华为云
+    - name: Transfer files to Huawei Cloud
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HUAWEI_SERVER_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "se2025FrontEnd/build/,se2025BackEnd/target/*.jar"
+        target: "C:/Users/Administrator/project/temp/deploy"
+    - name: Deploy and Start Application
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HUAWEI_SERVER_IP }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # 使用 PowerShell 执行部署
+          powershell.exe -Command "
+            # 停止当前运行的后端应用
+            Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
+            Start-Sleep -Seconds 3
+            
+            # 创建必要的目录
+            New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
+            New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
+            
+            # 部署前端文件
+            if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
+              Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
+            }
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\build\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
+            
+            # 部署后端JAR
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025BackEnd\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
+            
+            # 清理临时文件
+            Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
+            
+            # 启动后端应用（后台运行）
+            Set-Location 'C:\Users\Administrator\project\backend'
+            $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
+            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
+            
+            # 等待应用启动
+            Start-Sleep -Seconds 10
+            
+            # 检查应用是否启动成功
+            `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
+            if (`$process) {
+              Write-Host '应用启动成功,进程ID:' `$process.Id
+            } else {
+              Write-Host '应用启动失败，查看日志：'
+              Get-Content 'app.log' -Tail 50
+              Get-Content 'app-error.log' -Tail 50 -ErrorAction SilentlyContinue
+              exit 1
+            }
+          "
