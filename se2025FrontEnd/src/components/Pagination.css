@@ -2,46 +2,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-<<<<<<< HEAD
   padding: 20px 0;
   margin-top: 20px;
   border-top: 1px solid #e0e0e0;
   flex-wrap: wrap;
   gap: 16px;
-=======
-  margin: 2rem 0;
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  flex-wrap: wrap;
-  gap: 1rem;
->>>>>>> origin/sql
+
 }
 
 .pagination-info {
   color: #666;
-<<<<<<< HEAD
   font-size: 14px;
-=======
-  font-size: 0.9rem;
->>>>>>> origin/sql
-  white-space: nowrap;
+
 }
 
 .pagination-controls {
   display: flex;
   align-items: center;
-<<<<<<< HEAD
   gap: 8px;
-=======
-  gap: 0.5rem;
->>>>>>> origin/sql
-  flex-wrap: wrap;
+
 }
 
 .pagination-btn {
-<<<<<<< HEAD
   min-width: 36px;
   height: 36px;
   border: 1px solid #d9d9d9;
@@ -57,7 +39,7 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-=======
+
   background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -74,23 +56,17 @@
 
 .pagination-btn:hover:not(:disabled) {
   background: #f8f9fa;
->>>>>>> origin/sql
   border-color: #007bff;
   color: #007bff;
 }
 
 .pagination-btn:disabled {
-<<<<<<< HEAD
+
   background: #f5f5f5;
   color: #ccc;
   cursor: not-allowed;
   border-color: #e0e0e0;
-=======
-  background: #f8f9fa;
-  color: #ccc;
-  cursor: not-allowed;
-  border-color: #eee;
->>>>>>> origin/sql
+
 }
 
 .pagination-btn.active {
@@ -105,35 +81,24 @@
 }
 
 .pagination-dots {
-<<<<<<< HEAD
+
   color: #666;
   padding: 0 8px;
   font-size: 14px;
-=======
-  padding: 0.5rem;
-  color: #999;
-  user-select: none;
->>>>>>> origin/sql
+
 }
 
 .pagination-jump {
   display: flex;
   align-items: center;
-<<<<<<< HEAD
   gap: 8px;
   color: #666;
   font-size: 14px;
-=======
-  gap: 0.5rem;
-  color: #666;
-  font-size: 0.9rem;
-  white-space: nowrap;
->>>>>>> origin/sql
+
 }
 
 .pagination-jump input {
   width: 60px;
-<<<<<<< HEAD
   height: 32px;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
@@ -143,7 +108,7 @@
 }
 
 .pagination-jump input:focus {
-=======
+
   padding: 0.4rem;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -153,17 +118,14 @@
 
 .pagination-jump input:focus {
   outline: none;
->>>>>>> origin/sql
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .pagination-jump input:disabled {
-<<<<<<< HEAD
+
   background: #f5f5f5;
-=======
   background: #f8f9fa;
->>>>>>> origin/sql
   color: #ccc;
   cursor: not-allowed;
 }
@@ -172,7 +134,7 @@
 @media (max-width: 768px) {
   .pagination-container {
     flex-direction: column;
-<<<<<<< HEAD
+
     gap: 12px;
   }
   
@@ -186,37 +148,37 @@
   
   .pagination-jump {
     order: 3;
-=======
+
     gap: 1rem;
     text-align: center;
   }
   
   .pagination-controls {
     justify-content: center;
->>>>>>> origin/sql
+
   }
   
   .pagination-btn {
     min-width: 32px;
     height: 32px;
-<<<<<<< HEAD
+
     font-size: 12px;
-=======
+
     padding: 0.4rem 0.6rem;
     font-size: 0.8rem;
   }
   
   .pagination-jump {
     justify-content: center;
->>>>>>> origin/sql
+
   }
   
   .pagination-jump input {
     width: 50px;
-<<<<<<< HEAD
+
     height: 28px;
     font-size: 12px;
-=======
+
   }
 }
 
@@ -240,6 +202,5 @@
   .pagination-info,
   .pagination-jump {
     font-size: 0.8rem;
->>>>>>> origin/sql
   }
 } 
