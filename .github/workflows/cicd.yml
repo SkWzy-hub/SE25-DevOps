@@ -76,37 +76,28 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          # 使用 PowerShell 执行部署
           powershell.exe -Command "
-            # 停止当前运行的后端应用
             Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
             Start-Sleep -Seconds 3
             
-            # 创建必要的目录
             New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
             New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
             
-            # 部署前端文件
             if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
               Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
             }
             Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
             
-            # 部署后端JAR
             Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025BackEnd\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
             
-            # 清理临时文件
             Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
             
-            # 启动后端应用（后台运行）
             Set-Location 'C:\Users\Administrator\project\backend'
             $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
             Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
             
-            # 等待应用启动
             Start-Sleep -Seconds 10
             
-            # 检查应用是否启动成功
             `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
             if (`$process) {
               Write-Host '应用启动成功,进程ID:' `$process.Id
