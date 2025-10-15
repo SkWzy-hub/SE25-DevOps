@@ -45,7 +45,7 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
-        
+      
     # 准备前端文件
     - name: Build frontend for deploy
       working-directory: se2025FrontEnd
