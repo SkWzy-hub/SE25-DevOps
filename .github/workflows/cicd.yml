@@ -100,9 +100,9 @@ jobs:
             
             `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
             if (`$process) {
-              Write-Host '应用启动成功,进程ID:' `$process.Id
+              Write-Host 'success id:' `$process.Id
             } else {
-              Write-Host '应用启动失败，查看日志：'
+              Write-Host 'fail log:'
               Get-Content 'app.log' -Tail 50
               Get-Content 'app-error.log' -Tail 50 -ErrorAction SilentlyContinue
               exit 1
