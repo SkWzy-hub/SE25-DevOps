@@ -60,13 +60,17 @@ jobs:
       
     # SCP到华为云
     - name: Transfer files to Huawei Cloud
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HUAWEI_SERVER_IP }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "se2025FrontEnd/build/,se2025BackEnd/target/*.jar"
-        target: "C:/Users/Administrator/project/temp/deploy"
+      run: |
+        # 创建临时私钥文件
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+        chmod 600 /tmp/ssh_key
+    
+        # 直接使用scp命令传输文件
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -r se2025FrontEnd/build/* ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no se2025BackEnd/target/*.jar ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+    
+        rm -f /tmp/ssh_key
+        
     - name: Deploy and Start Application
       uses: appleboy/ssh-action@master
       with:
