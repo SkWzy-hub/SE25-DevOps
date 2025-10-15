@@ -17,10 +17,10 @@ jobs:
       with:
         node-version: 18
     - name: Install frontend dependencies
-      working-directory: se2025Frontend
+      working-directory: se2025FrontEnd
       run: npm install
     - name: Build frontend
-      working-directory: se2025Frontend
+      working-directory: se2025FrontEnd
       run: npm run build
 
     # 后端构建测试
@@ -42,7 +42,7 @@ jobs:
       
     # 准备前端文件
     - name: Build frontend for deploy
-      working-directory: se2025Frontend
+      working-directory: se2025FrontEnd
       run: |
         npm install
         npm run build
