@@ -61,22 +61,20 @@ jobs:
     # SCP到华为云
     - name: Transfer files to Huawei Cloud
       run: |
-        # 创建临时私钥文件
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
-        chmod 600 /tmp/ssh_key
+        # 安装sshpass(在GitHub Actions的Linux环境中)
+        sudo apt-get install -y sshpass
     
-        # 直接使用scp命令传输文件
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no -r se2025FrontEnd/dist ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
-        scp -i /tmp/ssh_key -o StrictHostKeyChecking=no se2025BackEnd/target ${{ secrets.SSH_USERNAME }}@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        # 使用sshpass传输文件
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
     
-        rm -f /tmp/ssh_key
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
         
     - name: Deploy and Start Application
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HUAWEI_SERVER_IP }}
         username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        password: ${{ secrets.SSH_PASSWORD }}
         script: |
           # 使用 PowerShell 执行部署
           powershell.exe -Command "
