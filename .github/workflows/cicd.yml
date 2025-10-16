@@ -61,13 +61,14 @@ jobs:
     # SCP到华为云
     - name: Transfer files to Huawei Cloud
       run: |
-        # 安装sshpass(在GitHub Actions的Linux环境中)
         sudo apt-get install -y sshpass
+
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/dist/"
     
-        # 使用sshpass传输文件
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
-    
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
+
+        # 3. 验证传输结果
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"Get-ChildItem 'C:\Users\Administrator\project\temp\deploy' -Recurse | Format-Table Name, Length\""
         
     - name: Deploy and Start Application
       uses: appleboy/ssh-action@master
@@ -75,36 +76,28 @@ jobs:
         host: ${{ secrets.HUAWEI_SERVER_IP }}
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
+        command_timeout: 30m
         script: |
           powershell.exe -Command "
-            Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
-            Start-Sleep -Seconds 3
-            
-            New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
-            New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
-            
-            if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
-              Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
-            }
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
-            
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025BackEnd\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
-            
-            Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
-            
-            Set-Location 'C:\Users\Administrator\project\backend'
-            $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
-            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
-            
-            Start-Sleep -Seconds 10
-            
-            `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
-            if (`$process) {
-              Write-Host 'success id:' `$process.Id
-            } else {
-              Write-Host 'fail log:'
-              Get-Content 'app.log' -Tail 50
-              Get-Content 'app-error.log' -Tail 50 -ErrorAction SilentlyContinue
-              exit 1
-            }
+          Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
+          Start-Sleep -Seconds 3
+          mkdir  'C:\Users\Administrator\project\backend' -Force
+          mkdir  'C:\Users\Administrator\project\frontend' -Force
           "
+          powershell.exe -Command "if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force }"
+          powershell.exe -Command "xcopy 'C:\Users\Administrator\project\temp\deploy\dist\*' 'C:\Users\Administrator\project\frontend\' /E /Y"
+          powershell.exe -Command "dir 'C:\Users\Administrator\project\frontend'"
+          powershell.exe -Command "copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\'"
+          powershell.exe -Command "dir 'C:\Users\Administrator\project\backend'"
+          
+          powershell.exe -Command "node -v"
+          powershell.exe -Command "npm -v"
+          powershell.exe -Command "java -version"
+          powershell.exe -Command "npm install -g serve"
+
+          powershell.exe -Command "cd 'C:\Users\Administrator\project\frontend'; start /b serve -s -l 5173"
+
+          powershell.exe -Command "cd 'C:\Users\Administrator\project\backend'; \$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1; java -jar \$jarFile > app.log 2> app-error.log"
+          powershell.exe -Command "Start-Sleep -Seconds 10"
+
+          powershell.exe -Command "\$process = Get-Process -Name java -ErrorAction SilentlyContinue; if (\$process) { Write-Host \"Java进程运行中：\$(\$process.Id)\" } else { Write-Host \"Java进程未找到\"; exit 1 }"
