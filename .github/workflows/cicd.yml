@@ -75,9 +75,9 @@ jobs:
         sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/dist/"
     
         echo "传输后端JAR文件..."
-        # 只传输主要的JAR文件，不传输整个target目录
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no se2025BackEnd/target/project-0.0.1-SNAPSHOT.jar Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
-    
+        # 传输整个target目录
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
+
         # 3. 验证传输结果
         sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"Get-ChildItem 'C:\Users\Administrator\project\temp\deploy' -Recurse | Format-Table Name, Length\""
         
