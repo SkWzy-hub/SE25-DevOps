@@ -61,21 +61,10 @@ jobs:
     # SCP到华为云
     - name: Transfer files to Huawei Cloud
       run: |
-        # 安装sshpass(在GitHub Actions的Linux环境中)
         sudo apt-get install -y sshpass
 
-        # 1. 在Windows服务器上创建精确的目录结构
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"
-        New-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist' -ItemType Directory -Force
-        New-Item -Path 'C:\Users\Administrator\project\temp\deploy\target' -ItemType Directory -Force
-        \""
-        
-        # 2. 分别传输，避免目录冲突
-        echo "传输前端文件..."
         sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/dist/"
     
-        echo "传输后端JAR文件..."
-        # 传输整个target目录
         sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
 
         # 3. 验证传输结果
@@ -91,7 +80,6 @@ jobs:
         command_timeout: 30m
         script: |
           powershell.exe -Command "
-          # 停止当前运行的后端应用
           Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
             Start-Sleep -Seconds 3
             
@@ -103,7 +91,7 @@ jobs:
             }
             Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
             
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\target\project-0.0.1-SNAPSHOT.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
             
             Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
             
@@ -114,7 +102,7 @@ jobs:
             Set-Location 'C:\Users\Administrator\project\backend'
       
             $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
-            Start-Process -FilePath 'java' -ArgumentList '-jar', 'project-0.0.1-SNAPSHOT.jar' -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
+            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
             
             Start-Sleep -Seconds 10
             
