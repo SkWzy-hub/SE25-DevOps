@@ -76,24 +76,23 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         command_timeout: 30m
         script: |
-          powershell.exe -Command "
-          Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force"
-          powershell.exe -Command "mkdir  'C:\Users\Administrator\project\backend' -Force"
-          powershell.exe -Command "mkdir  'C:\Users\Administrator\project\frontend' -Force"
-          powershell.exe -Command "if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force }"
-          powershell.exe -Command "xcopy 'C:\Users\Administrator\project\temp\deploy\dist\*' 'C:\Users\Administrator\project\frontend\' /E /Y"
-          powershell.exe -Command "dir 'C:\Users\Administrator\project\frontend'"
-          powershell.exe -Command "copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\'"
-          powershell.exe -Command "dir 'C:\Users\Administrator\project\backend'"
-          
-          powershell.exe -Command "node -v"
-          powershell.exe -Command "npm -v"
-          powershell.exe -Command "java -version"
-          powershell.exe -Command "npm install -g serve"
-
-          powershell.exe -Command "cd 'C:\Users\Administrator\project\frontend'; start /b serve -s -l 5173"
-
-          powershell.exe -Command "cd 'C:\Users\Administrator\project\backend'; \$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1; java -jar \$jarFile > app.log 2> app-error.log"
-          powershell.exe -Command "Start-Sleep -Seconds 10"
-
-          powershell.exe -Command "\$process = Get-Process -Name java -ErrorAction SilentlyContinue; if (\$process) { Write-Host \"Java进程运行中：\$(\$process.Id)\" } else { Write-Host \"Java进程未找到\"; exit 1 }"
+         powershell.exe -Command "
+         Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force;
+         mkdir 'C:\Users\Administrator\project\backend' -Force;
+         mkdir 'C:\Users\Administrator\project\frontend' -Force;
+         if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force };
+         xcopy 'C:\Users\Administrator\project\temp\deploy\dist\*' 'C:\Users\Administrator\project\frontend\' /E /Y;
+         dir 'C:\Users\Administrator\project\frontend';
+         copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force;
+         dir 'C:\Users\Administrator\project\backend';
+         node -v;
+         npm -v;
+         java -version;
+         npm install -g serve;
+         cd 'C:\Users\Administrator\project\frontend'; npx serve -s -l 5173;
+         cd 'C:\Users\Administrator\project\backend'; `$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1; java -jar `$jarFile > app.log 2> app-error.log;
+         Start-Sleep -Seconds 10;
+         `$process = Get-Process -Name java -ErrorAction SilentlyContinue;
+         if (`$process) { Write-Host 'Java进程运行中：' `$process.Id } else { Write-Host 'Java进程未找到'; Get-Content 'app.log' -Tail 10; Get-Content 'app-error.log' -Tail 10; exit 1 }
+         "
+        
