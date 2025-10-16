@@ -86,12 +86,20 @@ jobs:
             if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
               Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
             }
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025FrontEnd\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
             
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\se2025BackEnd\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
+            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
             
             Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
             
+          # 停止现有进程
+          Get-Process -Name 'node' -ErrorAction SilentlyContinue | Stop-Process -Force
+  
+          # 启动前端静态服务器
+          Set-Location 'C:\Users\Administrator\project\frontend'
+          $frontendPort = 3000
+          Start-Process -FilePath 'npx' -ArgumentList 'serve', '-s', '-l', "0.0.0.0:$frontendPort" -NoNewWindow
+            #启动后端
             Set-Location 'C:\Users\Administrator\project\backend'
             $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
             Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
