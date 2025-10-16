@@ -63,7 +63,19 @@ jobs:
       run: |
         # 安装sshpass(在GitHub Actions的Linux环境中)
         sudo apt-get install -y sshpass
-    
+
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"
+        `$tempPath = 'C:\Users\Administrator\project\temp\deploy'
+        Write-Host '检查目录: ' `$tempPath
+        if (Test-Path `$tempPath) {
+          Write-Host '目录已存在'
+          Write-Host '目录内容:'
+          Get-ChildItem `$tempPath -Recurse | Format-Table Name, Length, LastWriteTime
+        } else {
+          Write-Host '目录不存在'
+        }
+        \""
+        
         # 使用sshpass传输文件
         sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
     
@@ -109,10 +121,10 @@ jobs:
     
             # 列出源文件
             Write-Host 'dist目录内容:'
-            Get-ChildItem `$distPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+            Get-ChildItem `$distPath -Recurse | ForEach-Object { Write-Host \"  - `$(`$_.FullName)`" }
     
             Write-Host 'target目录内容:'
-            Get-ChildItem `$targetPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+            Get-ChildItem `$targetPath -Recurse | ForEach-Object { Write-Host \"  - `$(`$_.FullName)`" }
     
             # 4. 清理目标目录
             Write-Host '清理目标目录...'
@@ -145,10 +157,6 @@ jobs:
             Write-Host \"找到JAR文件: `$(`$jarFiles.Name)\"
             Copy-Item -Path `$jarFiles.FullName -Destination `$backendPath\\ -Force
             Write-Host '后端文件复制完成'
-            } catch {
-              Write-Host '后端文件复制失败: ' `$_.Exception.Message
-              exit 1
-            }
     
             # 6. 验证复制结果
             Write-Host '验证复制结果...'
