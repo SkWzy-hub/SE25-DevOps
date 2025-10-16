@@ -1,0 +1,39 @@
+script: |
+          # powershell.exe -Command "
+          # Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
+          #   Start-Sleep -Seconds 3
+            
+          #   New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
+          #   New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
+            
+          #   if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
+          #     Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
+          #   }
+          #   Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
+            
+          #   Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
+            
+          #   Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
+            
+          #   Set-Location 'C:\Users\Administrator\project\frontend'
+          #   `$frontendPort = 5173
+          #   Start-Process -FilePath 'npx' -ArgumentList 'serve', '-s', '-l', \"0.0.0.0:`$frontendPort\" -NoNewWindow
+    
+          #   Set-Location 'C:\Users\Administrator\project\backend'
+      
+          #   $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
+          #   Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
+            
+          #   Start-Sleep -Seconds 10
+            
+          #   `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
+          #   if (`$process) {
+          #     Write-Host 'success id:' `$process.Id
+          #   } else {
+          #     Write-Host 'fail log:'
+          #     Get-Content 'app.log' -Tail 50
+          #     Get-Content 'app-error.log' -Tail 50 -ErrorAction SilentlyContinue
+          #     exit 1
+          #   }
+          # "
+            
