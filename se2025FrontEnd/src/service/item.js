@@ -94,8 +94,8 @@ export const getItemsPage = async (pageParams = {}) => {
     
     const response = await axios.get('/api/items/page', { params });
     const apiResponse = response.data;
-    
-    if (apiResponse.success || response.code === 200) {
+
+    if (apiResponse.success || apiResponse.code === 200) {
       return apiResponse.data; // 返回PageResponseDTO
     } else {
       console.error('API error:', apiResponse.message);
