@@ -90,7 +90,7 @@ jobs:
             `$frontendPath = 'C:\Users\Administrator\project\frontend'
             `$tempPath = 'C:\Users\Administrator\project\temp\deploy'
             New-Item -Path `$backendPath -ItemType Directory -Force
-            New-Item -Path $frontendPath -ItemType Directory -Force
+            New-Item -Path `$frontendPath -ItemType Directory -Force
             
             # 3. 检查源目录和文件是否存在
             Write-Host '检查源文件...'
@@ -134,13 +134,16 @@ jobs:
             }
     
             Write-Host '复制后端文件...'
-            try {
-              `$jarFiles = Get-ChildItem -Path `$targetPath\*.jar
-              if (`$jarFiles.Count -eq 0) {
-                Write-Host '错误: 未找到jar文件'
-                exit 1
-              }
-            Copy-Item -Path `$targetPath\*.jar -Destination `$backendPath\ -Force
+            # 修复：排除.original文件，只复制主要的JAR文件
+            `$jarFiles = Get-ChildItem -Path \"`$targetPath\\*.jar\" | Where-Object { `$_.Name -notlike '*.original' }
+            if (`$jarFiles.Count -eq 0) {
+              Write-Host '错误: 未找到jar文件'
+              Write-Host '可用的文件:'
+              Get-ChildItem `$targetPath | Format-Table Name, Length
+              exit 1
+            }
+            Write-Host \"找到JAR文件: `$(`$jarFiles.Name)\"
+            Copy-Item -Path `$jarFiles.FullName -Destination `$backendPath\\ -Force
             Write-Host '后端文件复制完成'
             } catch {
               Write-Host '后端文件复制失败: ' `$_.Exception.Message
@@ -170,7 +173,7 @@ jobs:
             Write-Host '启动后端服务...'
             Set-Location `$backendPath
             `$backendPort = 8080
-            `$jarFile = Get-ChildItem -Path `$backendPath\*.jar | Select-Object -First 1 -ExpandProperty Name
+            `$jarFile = Get-ChildItem -Path \"`$backendPath\\*.jar\" | Where-Object { `$_.Name -notlike '*.original' } | Select-Object -First 1 -ExpandProperty Name
             if (-Not `$jarFile) {
               Write-Host '错误: 后端目录中未找到jar文件'
               exit 1
