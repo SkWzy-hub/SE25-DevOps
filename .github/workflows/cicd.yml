@@ -77,7 +77,6 @@ jobs:
         command_timeout: 30m
         script: |
          powershell.exe -Command "
-         Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force;
          mkdir 'C:\Users\Administrator\project\backend' -Force;
          mkdir 'C:\Users\Administrator\project\frontend' -Force;
          if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force };
