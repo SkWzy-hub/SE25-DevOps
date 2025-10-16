@@ -155,11 +155,6 @@ jobs:
             Write-Host '后端目录内容:'
             Get-ChildItem `$backendPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
     
-            # 7. 清理临时文件
-            Write-Host '清理临时文件...'
-            if (Test-Path `$tempPath) {
-              Remove-Item -Path `$tempPath -Recurse -Force -ErrorAction SilentlyContinue
-            }
     
             # 8. 停止现有Node进程
             Write-Host '停止现有Node进程...'
