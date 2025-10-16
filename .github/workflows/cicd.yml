@@ -77,11 +77,9 @@ jobs:
         command_timeout: 30m
         script: |
           powershell.exe -Command "
-          Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
-          Start-Sleep -Seconds 3
-          mkdir  'C:\Users\Administrator\project\backend' -Force
-          mkdir  'C:\Users\Administrator\project\frontend' -Force
-          "
+          Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force"
+          powershell.exe -Command "mkdir  'C:\Users\Administrator\project\backend' -Force"
+          powershell.exe -Command "mkdir  'C:\Users\Administrator\project\frontend' -Force"
           powershell.exe -Command "if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force }"
           powershell.exe -Command "xcopy 'C:\Users\Administrator\project\temp\deploy\dist\*' 'C:\Users\Administrator\project\frontend\' /E /Y"
           powershell.exe -Command "dir 'C:\Users\Administrator\project\frontend'"
