@@ -77,43 +77,129 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
           powershell.exe -Command "
+            # 添加详细日志输出
+            `$ErrorActionPreference = 'Stop'
+            Write-Host '开始部署脚本...'
+            # 1. 停止现有Java进程
+            Write-Host '停止现有Java进程...'
             Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
             Start-Sleep -Seconds 3
+            # 2. 创建目标目录
+            Write-Host '创建目标目录...'
+            `$backendPath = 'C:\Users\Administrator\project\backend'
+            `$frontendPath = 'C:\Users\Administrator\project\frontend'
+            `$tempPath = 'C:\Users\Administrator\project\temp\deploy'
+            New-Item -Path `$backendPath -ItemType Directory -Force
+            New-Item -Path $frontendPath -ItemType Directory -Force
             
-            New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
-            New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
-            
-            if (Test-Path 'C:\Users\Administrator\project\frontend\*') {
-              Remove-Item -Path 'C:\Users\Administrator\project\frontend\*' -Recurse -Force
+            # 3. 检查源目录和文件是否存在
+            Write-Host '检查源文件...'
+            `$distPath = 'C:\Users\Administrator\project\temp\deploy\dist'
+            `$targetPath = 'C:\Users\Administrator\project\temp\deploy\target'
+    
+            if (-Not (Test-Path `$distPath)) {
+              Write-Host '错误: dist目录不存在 - ' `$distPath
+              exit 1
             }
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force
-            
-            Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\target\*.jar' -Destination 'C:\Users\Administrator\project\backend\' -Force
-            
-            Remove-Item -Path 'C:\Users\Administrator\project\temp\deploy' -Recurse -Force -ErrorAction SilentlyContinue
-            
-          # 停止现有进程
-          Get-Process -Name 'node' -ErrorAction SilentlyContinue | Stop-Process -Force
-  
-          # 启动前端静态服务器
-          Set-Location 'C:\Users\Administrator\project\frontend'
-          $frontendPort = 5173
-          Start-Process -FilePath 'npx' -ArgumentList 'serve', '-s', '-l', "0.0.0.0:$frontendPort" -NoNewWindow
-            #启动后端
-            Set-Location 'C:\Users\Administrator\project\backend'
-            $backendPort = 8080
-            $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
-            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile,"--server.port=$backendPort" -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
-            
+    
+            if (-Not (Test-Path `$targetPath)) {
+              Write-Host '错误: target目录不存在 - ' `$targetPath
+              exit 1
+            }
+    
+            # 列出源文件
+            Write-Host 'dist目录内容:'
+            Get-ChildItem `$distPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+    
+            Write-Host 'target目录内容:'
+            Get-ChildItem `$targetPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+    
+            # 4. 清理目标目录
+            Write-Host '清理目标目录...'
+            if (Test-Path `$frontendPath\*) {
+              Remove-Item -Path `$frontendPath\* -Recurse -Force
+            }
+            if (Test-Path `$backendPath\*) {
+              Remove-Item -Path `$backendPath\* -Recurse -Force
+            }
+    
+            # 5. 复制文件
+            Write-Host '复制前端文件...'
+            try {
+              Copy-Item -Path `$distPath\* -Destination `$frontendPath\ -Recurse -Force
+              Write-Host '前端文件复制完成'
+            } catch {
+              Write-Host '前端文件复制失败: ' `$_.Exception.Message
+              exit 1
+            }
+    
+            Write-Host '复制后端文件...'
+            try {
+              `$jarFiles = Get-ChildItem -Path `$targetPath\*.jar
+              if (`$jarFiles.Count -eq 0) {
+                Write-Host '错误: 未找到jar文件'
+                exit 1
+              }
+            Copy-Item -Path `$targetPath\*.jar -Destination `$backendPath\ -Force
+            Write-Host '后端文件复制完成'
+            } catch {
+              Write-Host '后端文件复制失败: ' `$_.Exception.Message
+              exit 1
+            }
+    
+            # 6. 验证复制结果
+            Write-Host '验证复制结果...'
+            Write-Host '前端目录内容:'
+            Get-ChildItem `$frontendPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+    
+            Write-Host '后端目录内容:'
+            Get-ChildItem `$backendPath -Recurse | ForEach-Object { Write-Host `"  - `$(`$_.FullName)`" }
+    
+            # 7. 清理临时文件
+            Write-Host '清理临时文件...'
+            if (Test-Path `$tempPath) {
+              Remove-Item -Path `$tempPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
+    
+            # 8. 停止现有Node进程
+            Write-Host '停止现有Node进程...'
+            Get-Process -Name 'node' -ErrorAction SilentlyContinue | Stop-Process -Force
+    
+            # 9. 启动前端服务
+            Write-Host '启动前端服务...'
+            Set-Location `$frontendPath
+            `$frontendPort = 5173
+            Start-Process -FilePath 'npx' -ArgumentList 'serve', '-s', '-l', \"0.0.0.0:`$frontendPort\" -NoNewWindow
+    
+            # 10. 启动后端服务
+            Write-Host '启动后端服务...'
+            Set-Location `$backendPath
+            `$backendPort = 8080
+            `$jarFile = Get-ChildItem -Path `$backendPath\*.jar | Select-Object -First 1 -ExpandProperty Name
+            if (-Not `$jarFile) {
+              Write-Host '错误: 后端目录中未找到jar文件'
+              exit 1
+            }
+    
+            Write-Host '启动JAR文件: ' `$jarFile
+            Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarFile, \"--server.port=`$backendPort\" -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
+    
             Start-Sleep -Seconds 10
-            
-            `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like "*$jarFile*" }
+    
+            # 11. 验证后端是否启动成功
+            `$process = Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like \"*`$jarFile*\" }
             if (`$process) {
-              Write-Host 'success id:' `$process.Id
+              Write-Host '后端启动成功，进程ID: ' `$process.Id
             } else {
-              Write-Host 'fail log:'
-              Get-Content 'app.log' -Tail 50
-              Get-Content 'app-error.log' -Tail 50 -ErrorAction SilentlyContinue
+              Write-Host '后端启动失败，查看日志...'
+              if (Test-Path 'app.log') {
+                Write-Host '应用日志:'
+                Get-Content 'app.log' -Tail 50
+              }
+              if (Test-Path 'app-error.log') {
+                Write-Host '错误日志:'
+                Get-Content 'app-error.log' -Tail 50
+              }
               exit 1
             }
           "
