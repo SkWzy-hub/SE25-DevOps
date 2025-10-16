@@ -65,11 +65,14 @@ jobs:
         sudo apt-get install -y sshpass
 
         # 1. 在Windows服务器上创建精确的目录结构
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"New-Item -Path 'C:\Users\Administrator\project\temp\deploy\target' -ItemType Directory -Force\""
-    
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"
+        New-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist' -ItemType Directory -Force
+        New-Item -Path 'C:\Users\Administrator\project\temp\deploy\target' -ItemType Directory -Force
+        \""
+        
         # 2. 分别传输，避免目录冲突
         echo "传输前端文件..."
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/"
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/dist/"
     
         echo "传输后端JAR文件..."
         # 只传输主要的JAR文件，不传输整个target目录
