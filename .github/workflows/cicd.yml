@@ -64,22 +64,19 @@ jobs:
         # 安装sshpass(在GitHub Actions的Linux环境中)
         sudo apt-get install -y sshpass
 
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} 'powershell -Command "
-        $tempPath = \"C:\Users\Administrator\project\temp\deploy\"
-        Write-Host \"检查目录: $tempPath\"
-        if (Test-Path $tempPath) {
-          Write-Host '目录已存在'
-          Write-Host '目录内容:'
-          Get-ChildItem $tempPath -Recurse | Format-Table Name, Length, LastWriteTime
-        } else {
-          Write-Host '目录不存在'
-        }
-        "'
-
-        # 使用sshpass传输文件
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        # 1. 在Windows服务器上创建精确的目录结构
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"New-Item -Path 'C:\Users\Administrator\project\temp\deploy\target' -ItemType Directory -Force\""
     
-        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target Administrator@${{ secrets.HUAWEI_SERVER_IP }}:C:/Users/Administrator/project/temp/deploy/
+        # 2. 分别传输，避免目录冲突
+        echo "传输前端文件..."
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/"
+    
+        echo "传输后端JAR文件..."
+        # 只传输主要的JAR文件，不传输整个target目录
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no se2025BackEnd/target/project-0.0.1-SNAPSHOT.jar Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
+    
+        # 3. 验证传输结果
+        sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"Get-ChildItem 'C:\Users\Administrator\project\temp\deploy' -Recurse | Format-Table Name, Length\""
         
     - name: Deploy and Start Application
       uses: appleboy/ssh-action@master
