@@ -76,7 +76,5 @@ jobs:
         password: ${{ secrets.SSH_PASSWORD }}
         command_timeout: 30m
         script: |
-         powershell.exe -Command "
-          powershell.exe -ExecutionPolicy Bypass -File "C:\Users\Administrator\deploy.ps1"
-         "
+          powershell.exe -ExecutionPolicy Bypass -File "C:\Users\Administrator\project\deploy.ps1"
         
