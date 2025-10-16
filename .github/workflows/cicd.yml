@@ -76,13 +76,28 @@ jobs:
         host: ${{ secrets.HUAWEI_SERVER_IP }}
         username: ${{ secrets.SSH_USERNAME }}
         password: ${{ secrets.SSH_PASSWORD }}
-        script_stop: true
         command_timeout: 30m
         script: |
           powershell.exe -Command "
           Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
           Start-Sleep -Seconds 3
-          New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
-          New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
+          mkdir  'C:\Users\Administrator\project\backend' -Force
+          mkdir  'C:\Users\Administrator\project\frontend' -Force
           "
+          powershell.exe -Command "if (Test-Path 'C:\Users\Administrator\project\frontend\*') { Remove-Item 'C:\Users\Administrator\project\frontend\*' -Recurse -Force }"
+          powershell.exe -Command "xcopy 'C:\Users\Administrator\project\temp\deploy\dist\*' 'C:\Users\Administrator\project\frontend\' /E /Y"
+          powershell.exe -Command "dir 'C:\Users\Administrator\project\frontend'"
+          powershell.exe -Command "copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\'"
+          powershell.exe -Command "dir 'C:\Users\Administrator\project\backend'"
           
+          powershell.exe -Command "node -v"
+          powershell.exe -Command "npm -v"
+          powershell.exe -Command "java -version"
+          powershell.exe -Command "npm install -g serve"
+
+          powershell.exe -Command "cd 'C:\Users\Administrator\project\frontend'; start /b serve -s -l 5173"
+
+          powershell.exe -Command "cd 'C:\Users\Administrator\project\backend'; \$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1; java -jar \$jarFile > app.log 2> app-error.log"
+          powershell.exe -Command "Start-Sleep -Seconds 10"
+
+          powershell.exe -Command "\$process = Get-Process -Name java -ErrorAction SilentlyContinue; if (\$process) { Write-Host \"Java进程运行中：\$(\$process.Id)\" } else { Write-Host \"Java进程未找到\"; exit 1 }"
