@@ -79,5 +79,10 @@ jobs:
         script_stop: true
         command_timeout: 30m
         script: |
-          powershell.exe -Command "Copy-Item -Path 'C:\Users\Administrator\project\temp\deploy\dist\*' -Destination 'C:\Users\Administrator\project\frontend\' -Recurse -Force"
-        
+          powershell.exe -Command "
+          Get-Process -Name java -ErrorAction SilentlyContinue | Where-Object { `$_.CommandLine -like '*.jar*' } | Stop-Process -Force
+          Start-Sleep -Seconds 3
+          New-Item -Path 'C:\Users\Administrator\project\backend' -ItemType Directory -Force
+          New-Item -Path 'C:\Users\Administrator\project\frontend' -ItemType Directory -Force
+          "
+          
