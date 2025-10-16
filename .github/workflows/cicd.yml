@@ -97,12 +97,13 @@ jobs:
   
           # 启动前端静态服务器
           Set-Location 'C:\Users\Administrator\project\frontend'
-          $frontendPort = 3000
+          $frontendPort = 5173
           Start-Process -FilePath 'npx' -ArgumentList 'serve', '-s', '-l', "0.0.0.0:$frontendPort" -NoNewWindow
             #启动后端
             Set-Location 'C:\Users\Administrator\project\backend'
+            $backendPort = 8080
             $jarFile = Get-ChildItem -Path 'C:\Users\Administrator\project\backend\*.jar' | Select-Object -First 1 -ExpandProperty Name
-            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
+            Start-Process -FilePath 'java' -ArgumentList '-jar', $jarFile,"--server.port=$backendPort" -RedirectStandardOutput 'app.log' -RedirectStandardError 'app-error.log' -NoNewWindow
             
             Start-Sleep -Seconds 10
             
