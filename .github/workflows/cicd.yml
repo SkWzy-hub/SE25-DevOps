@@ -78,5 +78,4 @@ jobs:
         script: |
          powershell.exe -Command "
           powershell.exe -ExecutionPolicy Bypass -File "C:\Users\Administrator\deploy.ps1"
-         "
-        
+         "        
