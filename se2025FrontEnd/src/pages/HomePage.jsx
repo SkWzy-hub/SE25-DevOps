@@ -186,7 +186,7 @@ const HomePage = () => {
         </h1>
         <p>
           <i className="fas fa-university" style={{color: '#3498db', marginRight: '0.25rem'}}></i>
-          交大校园二手交易平台，像葡萄一样甜美的淘宝体验
+          交大校园二手交易平台，像葡萄一样甜美的购物体验
           <i className="fas fa-heart" style={{color: '#e74c3c', marginLeft: '0.25rem'}}></i>
         </p>
       </div>
