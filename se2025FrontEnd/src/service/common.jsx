@@ -98,7 +98,7 @@ export const TokenService = {
 };
 
 // 在开发环境使用Vite代理，生产环境使用环境变量
-export const BASEURL = import.meta.env.VITE_BASE_URL ?? '';
+export const BASEURL = 'http://localhost:8080';
 export const PREFIX = `${BASEURL}/api`;
 export const API_DOCS_URL = `${BASEURL}/api-docs`;
 export const DUMMY_RESPONSE = {
