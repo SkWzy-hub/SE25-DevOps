@@ -181,7 +181,7 @@ const HomePage = () => {
       <div className="hero-section">
         <h1>
           <img src="/grape.png" alt="葡萄" className="grape-icon hero-grape" />
-          交大葡淘
+          交大葡萄
           <img src="/grape.png" alt="葡萄" className="grape-icon hero-grape" />
         </h1>
         <p>
