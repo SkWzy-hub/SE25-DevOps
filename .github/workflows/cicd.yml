@@ -1,8 +1,8 @@
 name: CI/CD Pipeline
-
+#暂时修改branches，暂停该工作流
 on:
   pull_request_target:
-    branches: [ main ]
+    branches: [ test-ci ]
 
 jobs:
   build-and-test:

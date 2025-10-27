@@ -1,0 +1,81 @@
+name: Backend CI/CD
+
+on:
+  pull_request_target:
+    branches: [ main ]
+    paths:
+      - 'se2025BackEnd/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  backend-build-test:
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          
+      - name: Build backend
+        working-directory: se2025BackEnd
+        run: mvn package -DskipTests
+
+  backend-deploy:
+    needs: backend-build-test
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK for deploy
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          
+      - name: Build backend JAR
+        working-directory: se2025BackEnd
+        run: mvn package -DskipTests
+          
+      - name: Transfer backend files to Huawei Cloud
+        run: |
+          sudo apt-get install -y sshpass
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/*.jar Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
+
+      - name: Deploy Backend
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HUAWEI_SERVER_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 30m
+          script: |
+            powershell.exe -ExecutionPolicy Bypass -Command "
+            # 停止旧进程
+            Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | 
+            ForEach-Object { Stop-Process -Id `$_.OwningProcess -Force }
+            Start-Sleep -Seconds 3
+        
+            # 部署新版本
+            mkdir 'C:\Users\Administrator\project\backend' -Force
+            copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
+        
+            # 启动服务
+            cd 'C:\Users\Administrator\project\backend'
+            `$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1
+            Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarFile.Name, '--server.port=8080' -NoNewWindow
+        
+            # 验证启动
+            Start-Sleep -Seconds 10
+            if (Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue) {
+              Write-Host '✅ 后端服务启动成功'
+            } else {
+            Write-Host '❌ 后端服务启动失败'
+            exit 1
+            }
+            "

@@ -1,0 +1,95 @@
+name: Frontend CI/CD
+
+on:
+  pull_request_target:
+    branches: [ main ]
+    paths:
+      - 'se2025FrontEnd/**'
+      - '.github/workflows/frontend-ci.yml'
+
+env:
+  NGINX_DIR: "C:/nginx/html"
+
+jobs:
+  frontend-build-test:
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Install frontend dependencies
+        working-directory: se2025FrontEnd
+        run: npm install
+        
+      - name: Build frontend
+        working-directory: se2025FrontEnd
+        run: npm run build
+
+  frontend-deploy:
+    needs: frontend-build-test
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js for deploy
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          
+      - name: Build frontend for deploy
+        working-directory: se2025FrontEnd
+        run: |
+          npm install
+          npm run build
+          
+      - name: Transfer frontend files to Nginx directory
+        run: |
+          sudo apt-get install -y sshpass
+          # 先清空 Nginx 目录
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "rm -rf $NGINX_DIR/*"
+          # 传输文件到 Nginx 目录
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"$NGINX_DIR/"
+
+      - name: Deploy and restart Nginx
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HUAWEI_SERVER_IP }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 30m
+          script_stop: true
+          script: |
+            powershell.exe -ExecutionPolicy Bypass -Command "
+              try {
+                Write-Host '=== Starting Nginx Deployment ==='
+                
+                # 检查文件是否传输成功
+                Write-Host 'Checking files in Nginx directory...'
+                Get-ChildItem $env:NGINX_DIR
+                
+                # 检查 Nginx 进程
+                Write-Host 'Checking Nginx status...'
+                $nginxProcess = Get-Process nginx -ErrorAction SilentlyContinue
+                
+                if ($nginxProcess) {
+                  Write-Host 'Nginx is running, reloading...'
+                  nginx -s reload
+                  Write-Host '✅ Nginx reloaded successfully'
+                } else {
+                  Write-Host 'Nginx is not running, starting...'
+                  Start-Process nginx
+                  Write-Host '✅ Nginx started successfully'
+                }
+                
+                Write-Host '✅ Frontend deployed to Nginx successfully'
+              } catch {
+                Write-Host '❌ Deployment failed: ' $_.Exception.Message
+                exit 1
+              }
