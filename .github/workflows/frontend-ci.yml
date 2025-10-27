@@ -53,7 +53,7 @@ jobs:
         run: |
           sudo apt-get install -y sshpass
           # 先清空 Nginx 目录
-          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "rm -rf $NGINX_DIR/*"
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no Administrator@${{ secrets.HUAWEI_SERVER_IP }} "powershell -Command \"Remove-Item -Recurse -Force '$NGINX_DIR/*' -ErrorAction SilentlyContinue\""
           # 传输文件到 Nginx 目录
           sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025FrontEnd/dist/* Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"$NGINX_DIR/"
 
