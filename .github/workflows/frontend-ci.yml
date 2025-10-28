@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}  # 明确指定PR源分支
           fetch-depth: 0
-          
+        
       - name: Set up Node.js for deploy
         uses: actions/setup-node@v3
         with:
