@@ -35,13 +35,16 @@ jobs:
       
   frontend-deploy:
     needs: frontend-build-test
-    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request_target' 
     runs-on: ubuntu-latest
     steps:
       
       - name: Checkout code (PR source branch)
         uses: actions/checkout@v3
-      
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # 明确指定PR源分支
+          fetch-depth: 0
+        
       - name: Set up Node.js for deploy
         uses: actions/setup-node@v3
         with:
