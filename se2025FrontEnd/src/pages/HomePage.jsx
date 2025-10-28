@@ -181,12 +181,12 @@ const HomePage = () => {
       <div className="hero-section">
         <h1>
           <img src="/grape.png" alt="葡萄" className="grape-icon hero-grape" />
-          交大葡tao
+          交大葡tao zhen hao
           <img src="/grape.png" alt="葡萄" className="grape-icon hero-grape" />
         </h1>
         <p>
           <i className="fas fa-university" style={{color: '#3498db', marginRight: '0.25rem'}}></i>
-          交大校园二手交易平台，像葡萄一样甜美的taobao体验
+          交大校园二手交易平台，像葡萄一样甜美的淘宝体验
           <i className="fas fa-heart" style={{color: '#e74c3c', marginLeft: '0.25rem'}}></i>
         </p>
       </div>
