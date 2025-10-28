@@ -14,8 +14,11 @@ jobs:
   frontend-build-test:
     runs-on: ubuntu-latest
     steps:  
-      - name: Checkout code
+      - name: Checkout PR source branch
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # 明确指定PR源分支
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -29,13 +32,14 @@ jobs:
       - name: Build frontend
         working-directory: se2025FrontEnd
         run: npm run build
-
+      
   frontend-deploy:
     needs: frontend-build-test
-    if: github.event_name == 'pull_request_target' 
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      
+      - name: Checkout code (PR source branch)
         uses: actions/checkout@v3
       
       - name: Set up Node.js for deploy
@@ -64,32 +68,28 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           command_timeout: 30m
-          script_stop: true
           script: |
             powershell.exe -ExecutionPolicy Bypass -Command "
               try {
                 Write-Host '=== Starting Nginx Deployment ==='
-                
-                # 检查文件是否传输成功
-                Write-Host 'Checking files in Nginx directory...'
-                Get-ChildItem $env:NGINX_DIR
-                
-                # 检查 Nginx 进程
-                Write-Host 'Checking Nginx status...'
-                $nginxProcess = Get-Process nginx -ErrorAction SilentlyContinue
-                
+
+                # 进入 Nginx 安装目录
+                cd 'C:/nginx'
+
+                # 检查 Nginx 进程（给 $nginxProcess 赋值）
+                $nginxProcess = Get-Process -Name nginx -ErrorAction SilentlyContinue
+    
                 if ($nginxProcess) {
                   Write-Host 'Nginx is running, reloading...'
-                  nginx -s reload
-                  Write-Host '✅ Nginx reloaded successfully'
+                  .\nginx.exe -s reload
                 } else {
                   Write-Host 'Nginx is not running, starting...'
-                  Start-Process nginx
-                  Write-Host '✅ Nginx started successfully'
+                  Start-Process -FilePath .\nginx.exe
                 }
-                
+    
                 Write-Host '✅ Frontend deployed to Nginx successfully'
-              } catch {
-                Write-Host '❌ Deployment failed: ' $_.Exception.Message
-                exit 1
-              }
+                } catch {
+                  Write-Host '❌ Deployment failed: ' $_.Exception.Message
+                  exit 1
+                }
+              "
