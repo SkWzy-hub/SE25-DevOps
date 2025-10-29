@@ -72,7 +72,8 @@ jobs:
                 } else {
                   Write-Host '源目录不存在'
                 }
-                
+                mkdir 'C:\Users\Administrator\project\test' -Force
+
                 if (Test-Path 'C:\Users\Administrator\project\backend\') {
                   Get-ChildItem 'C:\Users\Administrator\project\backend\'
                 } else {
