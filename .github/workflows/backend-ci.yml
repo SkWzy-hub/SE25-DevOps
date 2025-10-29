@@ -53,12 +53,14 @@ jobs:
           sudo apt-get install -y sshpass
           sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/*.jar Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
 
-      - name: Simple Backend Test
+      - name:  Backend deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HUAWEI_SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          script_stop: true  # 出错时停止
+          debug: true        # 启用调试输出
           script: |
             powershell.exe -ExecutionPolicy Bypass -Command "
             '=== 开始后端部署 ==='
