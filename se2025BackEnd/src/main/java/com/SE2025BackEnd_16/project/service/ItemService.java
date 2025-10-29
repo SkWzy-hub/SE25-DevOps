@@ -80,7 +80,6 @@ public interface ItemService {
     PageResponseDTO<ItemResponseDTO> queryItems(ItemQueryRequestDTO requestDTO);
     
     /**
-<<<<<<< HEAD
      * 分类分页查询商品
      */
     PageResponseDTO<ItemResponseDTO> getItemsByCategoryPaged(Integer categoryId, int page, int size, String sortBy, String sortDirection);
@@ -88,8 +87,6 @@ public interface ItemService {
 
     
     /**
-=======
->>>>>>> origin/sql
      * 商品点赞（保留原有功能）
      */
     void likeItem(Integer itemId);
