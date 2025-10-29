@@ -62,10 +62,13 @@ jobs:
           command_timeout: 30m
           script: |
               powershell.exe -ExecutionPolicy Bypass -Command "
-              # 停止旧进程
-              Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | 
-              ForEach-Object { Stop-Process -Id `$_.OwningProcess -Force }
-              Start-Sleep -Seconds 3
+              # 获取8080端口进程ID并停止
+              \$pid = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
+              if (\$pid) {
+                Write-Host \"Stopping process (PID: \$pid)\"
+                Stop-Process -Id \$pid -Force
+                Start-Sleep -Seconds 3
+              }
   
               # 部署新版本
               mkdir 'C:\Users\Administrator\project\backend' -Force
@@ -77,10 +80,10 @@ jobs:
 
               # 验证启动
               Start-Sleep -Seconds 10
-              if (Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue) {
-                Write-Host '✅ 后端服务启动成功'
+              if (netstat -ano | findstr :8080) {
+                Write-Host '✅ Backend service started'
               } else {
-                Write-Host '❌ 后端服务启动失败'
+                Write-Host '❌ Backend service failed'
                 exit 1
               }
               "
