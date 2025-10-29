@@ -62,26 +62,25 @@ jobs:
           command_timeout: 30m
           script: |
               powershell.exe -ExecutionPolicy Bypass -Command "
-              # 获取8080端口进程ID并停止
-              `$processId = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
-              if (`$processId) {
-                Write-Host \"Stopping process (PID: `$processId)\"
-                Stop-Process -Id `$processId -Force
-                Start-Sleep -Seconds 3
-              }
-              # 部署新版本
-              mkdir 'C:\Users\Administrator\project\backend' -Force
-              Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
-  
-              `$jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
-              Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
-
-              # 验证启动
-              Start-Sleep -Seconds 10
-              if (netstat -ano | findstr :8080) {
-                Write-Host '✅ Backend service started'
-              } else {
-                Write-Host '❌ Backend service failed'
-                exit 1
-              }
+                Write-Host '=== 步骤1: 检查当前状态 ==='
+                netstat -ano | findstr :8080
+                if (!`$?) { Write-Host '没有找到8080端口进程' }
+                
+                Write-Host '=== 步骤2: 检查目录和文件 ==='
+                if (Test-Path 'C:\Users\Administrator\project\temp\deploy\target\') {
+                  Get-ChildItem 'C:\Users\Administrator\project\temp\deploy\target\'
+                } else {
+                  Write-Host '源目录不存在'
+                }
+                
+                if (Test-Path 'C:\Users\Administrator\project\backend\') {
+                  Get-ChildItem 'C:\Users\Administrator\project\backend\'
+                } else {
+                  Write-Host '目标目录不存在'
+                }
+                
+                Write-Host '=== 步骤3: 测试当前用户权限 ==='
+                whoami
+                Get-Date
+                Write-Host 'PowerShell环境测试成功'
               "
