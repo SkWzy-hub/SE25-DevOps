@@ -53,35 +53,11 @@ jobs:
           sudo apt-get install -y sshpass
           sshpass -p "${{ secrets.SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -r se2025BackEnd/target/*.jar Administrator@${{ secrets.HUAWEI_SERVER_IP }}:"C:/Users/Administrator/project/temp/deploy/target/"
 
-      - name: Deploy Backend
+      - name: Simple Backend Test
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HUAWEI_SERVER_IP }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          command_timeout: 30m
           script: |
-              powershell.exe -ExecutionPolicy Bypass -Command "
-                Write-Host '=== 步骤1: 检查当前状态 ==='
-                netstat -ano | findstr :8080
-                if (!`$?) { Write-Host '没有找到8080端口进程' }
-                
-                Write-Host '=== 步骤2: 检查目录和文件 ==='
-                if (Test-Path 'C:\Users\Administrator\project\temp\deploy\target\') {
-                  Get-ChildItem 'C:\Users\Administrator\project\temp\deploy\target\'
-                } else {
-                  Write-Host '源目录不存在'
-                }
-                mkdir 'C:\Users\Administrator\project\test' -Force
-
-                if (Test-Path 'C:\Users\Administrator\project\backend\') {
-                  Get-ChildItem 'C:\Users\Administrator\project\backend\'
-                } else {
-                  Write-Host '目标目录不存在'
-                }
-                
-                Write-Host '=== 步骤3: 测试当前用户权限 ==='
-                whoami
-                Get-Date
-                Write-Host 'PowerShell环境测试成功'
-              "
+            powershell.exe -Command "Write-Host '直接测试'; whoami; Get-Date"
