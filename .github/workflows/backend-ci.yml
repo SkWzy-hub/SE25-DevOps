@@ -62,58 +62,42 @@ jobs:
           script_stop: true  # 出错时停止
           debug: true        # 启用调试输出
           script: |
-            powershell.exe -ExecutionPolicy Bypass -Command "
-            '=== 开始后端部署 ==='
+                  powershell.exe -ExecutionPolicy Bypass -Command "
+                  '=== 开始后端部署 ===' | Out-Host
 
-            '步骤1: 获取8080端口进程ID并停止'
-            `$processId = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
-            '找到进程ID: ' + `$processId
-            if (`$processId) {
-                '停止进程 (PID: ' + `$processId + ')'
-                Stop-Process -Id `$processId -Force
-                Start-Sleep -Seconds 3
-                '进程已停止'
-            } else {
-                '没有找到占用8080端口的进程'
-            }
+                  '步骤1: 获取8080端口进程ID并停止' | Out-Host
+                  `$processId = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
+                  (\"找到进程ID: \" + `$processId) | Out-Host
+                  if (`$processId) {
+                      (\"停止进程 (PID: \" + `$processId + \")\") | Out-Host
+                      Stop-Process -Id `$processId -Force
+                      Start-Sleep -Seconds 3
+                      '进程已停止' | Out-Host
+                  } else {
+                      '没有找到占用8080端口的进程' | Out-Host
+                  }
 
-            '步骤2: 部署新版本'
-            '创建目录...'
-            mkdir 'C:\Users\Administrator\project\backend' -Force
+                  '步骤2: 部署新版本' | Out-Host
+                  mkdir 'C:\Users\Administrator\project\backend' -Force
+                  Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
+                  '文件复制完成' | Out-Host
 
-            '复制JAR文件...'
-            Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
+                  '步骤3: 启动服务' | Out-Host
+                  `$jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
+                  Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
+                  '服务启动命令已执行' | Out-Host
 
-            '步骤3: 检查复制结果'
-            `$jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
-            if (Test-Path `$jarPath) {
-                'JAR文件存在: ' + `$jarPath
-                '文件大小: ' + (Get-Item `$jarPath).Length + ' bytes'
-            } else {
-                '错误: JAR文件不存在'
-                exit 1
-            }
+                  '步骤4: 验证启动' | Out-Host
+                  Start-Sleep -Seconds 10
+                  `$isRunning = netstat -ano | findstr :8080
+                  if (`$isRunning) {
+                      '✅ 后端服务启动成功' | Out-Host
+                      '当前8080端口状态:' | Out-Host
+                      netstat -ano | findstr :8080 | Out-Host
+                  } else {
+                      '❌ 后端服务启动失败' | Out-Host
+                      exit 1
+                  }
 
-            '步骤4: 启动服务'
-            '启动后端服务...'
-            Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
-            '服务启动命令已执行'
-
-            '步骤5: 验证启动'
-            '等待服务启动...'
-            Start-Sleep -Seconds 10
-
-            `$isRunning = netstat -ano | findstr :8080
-            if (`$isRunning) {
-                '✅ 后端服务启动成功'
-                '当前8080端口状态:'
-                netstat -ano | findstr :8080
-            } else {
-                '❌ 后端服务启动失败'
-                '检查Java进程:'
-                Get-Process -Name java -ErrorAction SilentlyContinue
-                exit 1
-            }
-
-            '=== 后端部署完成 ==='
-            "
+                  '=== 后端部署完成 ===' | Out-Host
+                  "
