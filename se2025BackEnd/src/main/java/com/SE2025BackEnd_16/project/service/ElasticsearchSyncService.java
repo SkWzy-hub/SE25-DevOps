@@ -247,7 +247,7 @@ public class ElasticsearchSyncService {
             // 检查数据库中的可用且未删除商品数量
             long dbCount = itemRepository.countByIsAvailableTrueAndIsDeletedFalse();
             
-            log.info("📊 ES中商品数量: " + esCount + ", 数据库中可用商品数量: " + dbCount);
+            log.info("📊 ES中商品数量: " + esCount + ", 数据库中di可用商品数量为: " + dbCount);
             
             // 如果ES中没有数据，或者数据量相差很大，则需要初始同步
             return esCount == 0 || Math.abs(esCount - dbCount) > 5;
