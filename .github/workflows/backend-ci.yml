@@ -13,6 +13,9 @@ jobs:
     steps:  
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # 明确指定PR源分支
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -31,6 +34,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # 明确指定PR源分支
+          fetch-depth: 0
       
       - name: Set up JDK for deploy
         uses: actions/setup-java@v4
@@ -55,27 +61,26 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           command_timeout: 30m
           script: |
-            powershell.exe -ExecutionPolicy Bypass -Command "
-            # 停止旧进程
-            Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | 
-            ForEach-Object { Stop-Process -Id `$_.OwningProcess -Force }
-            Start-Sleep -Seconds 3
-        
-            # 部署新版本
-            mkdir 'C:\Users\Administrator\project\backend' -Force
-            copy 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
-        
-            # 启动服务
-            cd 'C:\Users\Administrator\project\backend'
-            `$jarFile = Get-ChildItem '*.jar' | Select-Object -First 1
-            Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarFile.Name, '--server.port=8080' -NoNewWindow
-        
-            # 验证启动
-            Start-Sleep -Seconds 10
-            if (Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue) {
-              Write-Host '✅ 后端服务启动成功'
-            } else {
-            Write-Host '❌ 后端服务启动失败'
-            exit 1
-            }
-            "
+              powershell.exe -ExecutionPolicy Bypass -Command "
+              # 停止旧进程
+              Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | 
+              ForEach-Object { Stop-Process -Id `$_.OwningProcess -Force }
+              Start-Sleep -Seconds 3
+  
+              # 部署新版本
+              mkdir 'C:\Users\Administrator\project\backend' -Force
+              Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
+  
+              # 启动服务 - 使用具体文件名
+              $jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
+              Start-Process -FilePath 'java' -ArgumentList '-jar', $jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
+
+              # 验证启动
+              Start-Sleep -Seconds 10
+              if (Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue) {
+                Write-Host '✅ 后端服务启动成功'
+              } else {
+                Write-Host '❌ 后端服务启动失败'
+                exit 1
+              }
+              "
