@@ -63,13 +63,12 @@ jobs:
           script: |
               powershell.exe -ExecutionPolicy Bypass -Command "
               # 获取8080端口进程ID并停止
-              \$pid = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
-              if (\$pid) {
-                Write-Host \"Stopping process (PID: \$pid)\"
-                Stop-Process -Id \$pid -Force
+              `$processId = (netstat -ano | findstr :8080 | findstr LISTENING | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1
+              if (`$processId) {
+                Write-Host \"Stopping process (PID: `$processId)\"
+                Stop-Process -Id `$processId -Force
                 Start-Sleep -Seconds 3
               }
-  
               # 部署新版本
               mkdir 'C:\Users\Administrator\project\backend' -Force
               Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
