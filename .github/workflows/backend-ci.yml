@@ -73,9 +73,8 @@ jobs:
               mkdir 'C:\Users\Administrator\project\backend' -Force
               Copy-Item 'C:\Users\Administrator\project\temp\deploy\target\*.jar' 'C:\Users\Administrator\project\backend\' -Force
   
-              # 启动服务 - 使用具体文件名
-              $jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
-              Start-Process -FilePath 'java' -ArgumentList '-jar', $jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
+              `$jarPath = 'C:\Users\Administrator\project\backend\project-0.0.1-SNAPSHOT.jar'
+              Start-Process -FilePath 'java' -ArgumentList '-jar', `$jarPath -NoNewWindow -WorkingDirectory 'C:\Users\Administrator\project\backend'
 
               # 验证启动
               Start-Sleep -Seconds 10
